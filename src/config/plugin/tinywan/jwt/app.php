@@ -7,22 +7,22 @@ return [
         'algorithms' => 'HS256',
 
         /** access令牌秘钥 */
-        'access_secret_key' => '2022d3d3LmJq',
+        'access_secret_key' => '2022sdfgd3d3LmJq',
 
         /** access令牌过期时间，单位：秒。默认 2 小时 */
-        'access_exp' => 7200,
+        'access_exp' => 604800,//7天
 
         /** refresh令牌秘钥 */
-        'refresh_secret_key' => '2022KTxigxc9o50c',
+        'refresh_secret_key' => '2422KTxigxc9o50c',
 
         /** refresh令牌过期时间，单位：秒。默认 7 天 */
-        'refresh_exp' => 604800,
+        'refresh_exp' => 60480000,
 
         /** refresh 令牌是否禁用，默认不禁用 false */
         'refresh_disable' => false,
 
         /** 令牌签发者 */
-        'iss' => 'webman.tinywan.cn',
+        'iss' => 'api.37.cool',
 
         /** 某个时间点后才能访问，单位秒。（如：30 表示当前时间30秒后才能使用） */
         'nbf' => 0,
@@ -31,7 +31,7 @@ return [
         'leeway' => 60,
 
         /** 是否允许单设备登录，默认不允许 false */
-        'is_single_device' => false,
+        'is_single_device' => true,
 
         /** 缓存令牌时间，单位：秒。默认 7 天 */
         'cache_token_ttl' => 604800,
@@ -44,7 +44,10 @@ return [
 
         /** 用户信息模型 */
         'user_model' => function ($uid) {
-            return [];
+            return \support\Db::table('37_user')
+                ->where('id', $uid)
+                ->select('id','email','mobile','create_time')
+                ->first();
         },
 
         /** 是否支持 get 请求获取令牌 */
