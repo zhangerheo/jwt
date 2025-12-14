@@ -26,9 +26,19 @@ class RedisHandler
      * @param string $token
      * @author Tinywan(ShaoBo Wan)
      */
-    public static function generateToken(string $pre, string $client, string $uid, int $ttl, string $token): void
+    public static function generateToken(string $pre, string $client, string $uid, int $ttl, string $token, $del_ttl = 10): void
     {
-        $cacheKey = $pre . $client. ':'. $uid;
+        $cacheKey = $pre . $client . ':' . $uid;
+
+        //region 先转移到删除令牌，ttl：10
+        $deleCacheKey = '_' . $pre . $client . ':' . $uid;
+        $_token = Redis::get($cacheKey);
+        if ($_token) {
+            Redis::setex($deleCacheKey, $del_ttl, $_token);
+        }
+
+        //endregion
+
         Redis::del($cacheKey);
         Redis::setex($cacheKey, $ttl, $token);
     }
@@ -64,12 +74,20 @@ class RedisHandler
      */
     public static function verifyToken(string $pre, string $client, string $uid, string $token): bool
     {
-        $cacheKey = $pre . $client. ':'. $uid;
+        $cacheKey = $pre . $client . ':' . $uid;
         //if (!Redis::exists($cacheKey)) {
-           // throw new JwtCacheTokenException('身份验证会话已过期，请再次登录！');
+        // throw new JwtCacheTokenException('身份验证会话已过期，请再次登录！');
         //}
+        //region 检查已删除令牌，如果存在返回true
+        $deleCacheKey = '_' . $pre . $client . ':' . $uid;
 
-        if (Redis::get($cacheKey) != $token && !empty( Redis::get($cacheKey))) {
+        if (Redis::get($deleCacheKey) == $token) {
+
+            return true;
+        }
+        //endregion
+
+        if (Redis::get($cacheKey) != $token && !empty(Redis::get($cacheKey))) {
             throw new JwtCacheTokenException('该账号已在其他设备登录，强制下线');
         }
         return true;
@@ -85,7 +103,7 @@ class RedisHandler
      */
     public static function clearToken(string $pre, string $client, string $uid): bool
     {
-        Redis::del($pre . $client. ':'. $uid);
+        Redis::del($pre . $client . ':' . $uid);
         return true;
     }
 }
