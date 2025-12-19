@@ -86,8 +86,13 @@ class RedisHandler
             return true;
         }
         //endregion
+        $_token = Redis::get($cacheKey);
+        if (empty($_token)) {
+            throw new JwtCacheTokenException('请先登录');
+        }
 
-        if (Redis::get($cacheKey) != $token && !empty(Redis::get($cacheKey))) {
+        if ($_token != $token) {
+          
             throw new JwtCacheTokenException('该账号已在其他设备登录，强制下线');
         }
         return true;
