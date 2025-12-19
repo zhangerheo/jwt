@@ -92,7 +92,6 @@ class RedisHandler
         }
 
         if ($_token != $token) {
-          
             throw new JwtCacheTokenException('该账号已在其他设备登录，强制下线');
         }
         return true;
