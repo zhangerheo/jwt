@@ -380,4 +380,21 @@ class JwtToken
         }
         return true;
     }
+       /**
+     * 解析 token
+     * @param string $token
+     * @param int $tokenType
+     * @return array
+     */
+    public static function tokenDecode(string $token, int $tokenType): array
+    {
+        $config = self::_getConfig();
+        $publicKey = self::ACCESS_TOKEN == $tokenType ? self::getPublicKey($config['algorithms']) : self::getPublicKey($config['algorithms'], self::REFRESH_TOKEN);
+        JWT::$leeway = $config['leeway'];
+
+        $decoded = JWT::decode($token, new Key($publicKey, $config['algorithms']));
+        $decodeToken = json_decode(json_encode($decoded), true);
+
+        return $decodeToken;
+    }
 }
