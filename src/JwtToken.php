@@ -116,7 +116,7 @@ class JwtToken
         $payload = self::generatePayload($config, $extend['extend']);
         $secretKey = self::getPrivateKey($config);
         $extend['exp'] = time() + $config['access_exp'];
-        $newToken['access_token'] = self::makeToken($extend, $secretKey, $config['algorithms']);
+        $newToken['access_token'] = self::makeToken($payload['accessPayload'], $secretKey, $config['algorithms']);
         if (!isset($config['refresh_disable']) || ($config['refresh_disable'] === false)) {
             $refreshSecretKey = self::getPrivateKey($config, self::REFRESH_TOKEN);
             $newToken['refresh_token'] = self::makeToken($payload['refreshPayload'], $refreshSecretKey, $config['algorithms']);
