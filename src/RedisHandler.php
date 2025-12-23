@@ -57,9 +57,9 @@ class RedisHandler
     {
         $cacheKey = $pre . $client . ':' . $uid;
         $isExists = Redis::exists($cacheKey);
-        if ($isExists) {
-            $ttl = Redis::ttl($cacheKey);
-        }
+        // if ($isExists) {
+        //     $ttl = Redis::ttl($cacheKey);
+        // }
         Redis::setex($cacheKey, $ttl, $token);
     }
 
