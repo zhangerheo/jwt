@@ -39,7 +39,6 @@ class RedisHandler
 
         //endregion
 
-        Redis::del($cacheKey);
         Redis::setex($cacheKey, $ttl, $token);
     }
 
