@@ -370,12 +370,15 @@ class JwtToken
      * @param string $client
      * @return bool
      */
-    public static function clear(string $client = self::TOKEN_CLIENT_WEB): bool
+      public static function clear(string $client = self::TOKEN_CLIENT_WEB, $uid = 0): bool
     {
         $config = self::_getConfig();
         if ($config['is_single_device']) {
-            $clearCacheRefreshTokenPre = RedisHandler::clearToken($config['cache_refresh_token_pre'], $client, (string)self::getCurrentId());
-            $clearCacheTokenPre = RedisHandler::clearToken($config['cache_token_pre'], $client, (string)self::getCurrentId());
+            if (empty($uid)) {
+                $uid = self::getCurrentId();
+            }
+            $clearCacheRefreshTokenPre = RedisHandler::clearToken($config['cache_refresh_token_pre'], $client, (string)$uid);
+            $clearCacheTokenPre = RedisHandler::clearToken($config['cache_token_pre'], $client, (string)$uid);
             return $clearCacheTokenPre && $clearCacheRefreshTokenPre;
         }
         return true;
