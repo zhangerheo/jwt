@@ -2,8 +2,8 @@
 
 /**
  * @desc RedisHanle.php 描述信息
- * @author Tinywan(ShaoBo Wan)
- * @date 2022/3/18 17:13
+ * @author besharp
+ * @date 2026/04/13 17:13
  */
 
 declare(strict_types=1);
@@ -87,11 +87,12 @@ class RedisHandler
         //endregion
         $_token = Redis::get($cacheKey);
         if (empty($_token)) {
-            throw new JwtCacheTokenException('请先登录');
+            throw new JwtCacheTokenException('请先登录',401017);
         }
 
         if ($_token != $token) {
-            throw new JwtCacheTokenException('该账号已在其他设备登录，强制下线');
+            $config = config('plugin.tinywan.jwt.app.jwt');
+            throw new JwtCacheTokenException($config['kicked_offline'],401016);
         }
         return true;
     }
