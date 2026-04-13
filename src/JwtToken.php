@@ -99,19 +99,19 @@ class JwtToken
         $config = self::_getConfig();
         try {
             $extend = self::verifyToken($token, self::REFRESH_TOKEN);
-            if (!empty($extend['extend'])){
+            if (!empty($extend['extend'])) {
                 $_extend = $extend['extend'];
             }
         } catch (SignatureInvalidException $signatureInvalidException) {
-            throw new JwtRefreshTokenExpiredException('刷新令牌无效',401021);
+            throw new JwtRefreshTokenExpiredException('刷新令牌无效', 401021);
         } catch (BeforeValidException $beforeValidException) {
-            throw new JwtRefreshTokenExpiredException('刷新令牌尚未生效',401022);
+            throw new JwtRefreshTokenExpiredException('刷新令牌尚未生效', 401022);
         } catch (ExpiredException $expiredException) {
-            throw new JwtRefreshTokenExpiredException('刷新令牌会话已过期，请再次登录！',401023);
+            throw new JwtRefreshTokenExpiredException('刷新令牌会话已过期，请再次登录！', 401023);
         } catch (UnexpectedValueException $unexpectedValueException) {
-            throw new JwtRefreshTokenExpiredException('刷新令牌获取的扩展字段不存在',401024);
-        } catch (JwtCacheTokenException | \Exception $exception) {
-            throw new JwtRefreshTokenExpiredException($exception->getMessage(),401025);
+            throw new JwtRefreshTokenExpiredException('刷新令牌获取的扩展字段不存在', 401024);
+        } catch (JwtCacheTokenException|\Exception $exception) {
+            throw new JwtRefreshTokenExpiredException($exception->getMessage(), 401025);
         }
         $payload = self::generatePayload($config, $extend['extend']);
         $secretKey = self::getPrivateKey($config);
@@ -123,7 +123,7 @@ class JwtToken
         }
         if ($config['is_single_device']) {
             $client = $extend['extend']['client'] ?? self::TOKEN_CLIENT_WEB;
-            RedisHandler::generateToken($config['cache_token_pre'], (string)$client, (string)$extend['extend']['id'], $config['access_exp'], $newToken['access_token'],$config['del_cache_token_ttl']);
+            RedisHandler::generateToken($config['cache_token_pre'], (string)$client, (string)$extend['extend']['id'], $config['access_exp'], $newToken['access_token'], $config['del_cache_token_ttl']);
             RedisHandler::refreshToken($config["cache_refresh_token_pre"], (string)$client, (string)$extend['extend']['id'], $config['refresh_exp'], $newToken['refresh_token']);
         }
         return $newToken;
@@ -156,7 +156,7 @@ class JwtToken
         }
         if ($config['is_single_device']) {
             $client = $extend['client'] ?? self::TOKEN_CLIENT_WEB;
-            RedisHandler::generateToken($config['cache_token_pre'], (string)$client, (string)$extend['id'], $config['access_exp'], $token['access_token'],$config['del_cache_token_ttl']);
+            RedisHandler::generateToken($config['cache_token_pre'], (string)$client, (string)$extend['id'], $config['access_exp'], $token['access_token'], $config['del_cache_token_ttl']);
             if (!isset($config['refresh_disable']) || ($config['refresh_disable'] === false)) {
                 if (isset($config["cache_refresh_token_pre"])) {
                     RedisHandler::generateToken($config["cache_refresh_token_pre"], (string)$client, (string)$extend['id'], $config['refresh_exp'], $token['refresh_token']);
@@ -180,15 +180,17 @@ class JwtToken
         try {
             return self::verifyToken($token, $tokenType);
         } catch (SignatureInvalidException $signatureInvalidException) {
-            throw new JwtTokenException('身份验证令牌无效',401011);
+            throw new JwtTokenException('身份验证令牌无效', 401011);
         } catch (BeforeValidException $beforeValidException) {
-            throw new JwtTokenException('身份验证令牌尚未生效',401012);
+            throw new JwtTokenException('身份验证令牌尚未生效', 401012);
         } catch (ExpiredException $expiredException) {
-            throw new JwtTokenExpiredException('身份验证会话已过期，请重新登录！',401013);
+            throw new JwtTokenExpiredException('身份验证会话已过期，请重新登录！', 401013);
         } catch (UnexpectedValueException $unexpectedValueException) {
-            throw new JwtTokenException('获取的扩展字段不存在',401014);
-        } catch (JwtCacheTokenException | \Exception $exception) {
-            throw new JwtTokenException($exception->getMessage(),401015);
+            throw new JwtTokenException('获取的扩展字段不存在', 401014);
+        } catch (JwtCacheTokenException $exception) {
+            throw new JwtCacheTokenException($exception->getMessage(), 401016);
+        } catch (\Exception $exception) {
+            throw new JwtTokenException($exception->getMessage(), 401015);
         }
     }
 
@@ -223,29 +225,29 @@ class JwtToken
         if (!$authorization || 'undefined' == $authorization) {
             $config = self::_getConfig();
             if (!isset($config['is_support_get_token']) || false === $config['is_support_get_token']) {
-                throw new JwtTokenException('请先登录',401000);
+                throw new JwtTokenException('请先登录', 401000);
             }
             $authorization = request()->get($config['is_support_get_token_key']);
             if (empty($authorization)) {
-                throw new JwtTokenException('请先登录',401000);
+                throw new JwtTokenException('请先登录', 401000);
             }
-            $authorization = 'Bearer '.$authorization;
+            $authorization = 'Bearer ' . $authorization;
         }
 
         if (self::REFRESH_TOKEN != substr_count($authorization, '.')) {
-            throw new JwtTokenException('非法的authorization信息',401001);
+            throw new JwtTokenException('非法的authorization信息', 401001);
         }
 
         if (2 != count(explode(' ', $authorization))) {
-            throw new JwtTokenException('Bearer验证中的凭证格式有误，中间必须有个空格',401000);
+            throw new JwtTokenException('Bearer验证中的凭证格式有误，中间必须有个空格', 401000);
         }
 
         [$type, $token] = explode(' ', $authorization);
         if ('Bearer' !== $type) {
-            throw new JwtTokenException('接口认证方式需为Bearer',401000);
+            throw new JwtTokenException('接口认证方式需为Bearer', 401000);
         }
         if (!$token || 'undefined' === $token) {
-            throw new JwtTokenException('尝试获取的Authorization信息不存在',401000);
+            throw new JwtTokenException('尝试获取的Authorization信息不存在', 401000);
         }
 
         return $token;
@@ -370,7 +372,7 @@ class JwtToken
      * @param string $client
      * @return bool
      */
-      public static function clear(string $client = self::TOKEN_CLIENT_WEB, $uid = 0): bool
+    public static function clear(string $client = self::TOKEN_CLIENT_WEB, $uid = 0): bool
     {
         $config = self::_getConfig();
         if ($config['is_single_device']) {
@@ -383,7 +385,8 @@ class JwtToken
         }
         return true;
     }
-       /**
+
+    /**
      * 解析 token
      * @param string $token
      * @param int $tokenType
